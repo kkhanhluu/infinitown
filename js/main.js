@@ -1,9 +1,5 @@
-const NORTH = 1,
-  EAST = -0.5,
-  SOUTH = 2,
-  WEST = 0.5,
-  LEAP = 240;
-
+const SOUTH = 2;
+const LEAP = 240;
 var camera,
   scene,
   controls,
@@ -15,7 +11,8 @@ var camera,
   raycaster = new THREE.Raycaster(),
   carList = [],
   manager = new THREE.LoadingManager(),
-  loader = new THREE.GLTFLoader(manager);
+  loader = new THREE.GLTFLoader(manager),
+  isPlaying = true;
 
 var clusterNames = [
   'factory',
@@ -109,7 +106,7 @@ const cluster = [
   { x: -5, z: -2, cluster: clusterNames[6], direction: SOUTH },
   { x: -5, z: -3, cluster: clusterNames[11], direction: SOUTH },
   { x: -5, z: -4, cluster: clusterNames[14], direction: SOUTH },
-  { x: -5, z: -5, cluster: clusterNames[15], direction: SOUTH },
+  { x: -5, z: -5, cluster: clusterNames[8], direction: SOUTH },
 ];
 
 function main() {
@@ -132,7 +129,7 @@ function main() {
   controls.screenSpacePanning = true;
 
   scene = new THREE.Scene();
-  scene.background = new THREE.Color('#ffffff');
+  scene.background = new THREE.Color('#9FE3FA');
 
   renderer.shadowMap.enabled = true;
   renderer.gammaInput = renderer.gammaOutput = true;
@@ -168,6 +165,9 @@ function main() {
   loadCars({ x: 1, z: 0, cluster: 'cars' });
 
   function render() {
+    if (!isPlaying) {
+      return;
+    }
     controls.update();
 
     if (camera.position.x > 130) {
@@ -255,20 +255,25 @@ function main() {
 
       gltf.scene.position.set(x * 60, 0, z * 60);
       if (direction) gltf.scene.rotation.y = Math.PI * direction;
-      else if (direction === EAST) gltf.scene.position.x += 20;
-      else if (direction === WEST) gltf.scene.position.z += 20;
-      else if (direction === NORTH)
-        gltf.scene.position.set(
-          gltf.scene.position.x + 20,
-          0,
-          gltf.scene.position.z + 20
-        );
 
       scene.add(gltf.scene);
       // addLights();
     });
   }
   requestAnimationFrame(render);
+
+  {
+    document
+      .getElementById('about-button')
+      .addEventListener('click', function (e) {
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+          requestAnimationFrame(render);
+        }
+        document.getElementById('about').classList.toggle('visible');
+        document.getElementById('c').classList.toggle('blur');
+      });
+  }
 }
 
 main();
@@ -315,14 +320,6 @@ function loadCars({ x, z, cluster, direction }) {
 
     gltf.scene.position.set(x * 60, 0, z * 60);
     if (direction) gltf.scene.rotation.y = Math.PI * direction;
-    else if (direction === EAST) gltf.scene.position.x += 20;
-    else if (direction === WEST) gltf.scene.position.z += 20;
-    else if (direction === NORTH)
-      gltf.scene.position.set(
-        gltf.scene.position.x + 20,
-        0,
-        gltf.scene.position.z + 20
-      );
 
     scene.add(gltf.scene);
 

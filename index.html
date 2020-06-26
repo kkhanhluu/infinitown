@@ -4,11 +4,43 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
+        <title>INFINITOWN</title>
+        <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@500&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="main.css">
     </head>
 
     <body>
+        <button id='about-button'></button>
+        <div id="about" class="">
+            <div class="popup">
+                <div class="inner">
+                    <h1>Infinitown</h1>
+                    <div class="description">
+
+                        <p>This demo is an attempt to experiment WebGL with THREE.js library. Its intention is to create
+                            a procedural city that feels alive and is fun
+                            to watch</p>
+
+                        <p>This is highly inspired by this orignal demo <a target="_blank"
+                                href='https://demos.littleworkshop.fr/infinitown'>INFINITOWN</a></p>
+
+                        <p>Made with: Three.js <br>Models by VenCreations.</p>
+
+                    </div>
+                    <div class="footer">
+                        <p class="small">
+                            Made by <a target="_blank" href="https://kkhanhluu.github.io/">Khanh Luu</a>, a web
+                            developer based in
+                            Darmstadt, who enjoys and is interested in building web applications. <a target="_blank"
+                                href="https://kkhanhluu.github.io/">Get in touch</a>.
+                        </p>
+                    </div>
+                    <div class="close" id="about-close"></div>
+                </div>
+            </div>
+        </div>
+
         <canvas style="width: 100vw; height: 100vh" id="c"></canvas>
         <script type="text/javascript" src="js/three.js"></script>
         <!-- <script type="text/javascript" src="js/MapControls.js"></script> -->
@@ -18,6 +50,9 @@
         <script type="text/javascript" src="js/OrbitControls.js"></script>
         <script type="text/javascript" src="js/RGBELoader.js"></script>
         <script type="text/javascript" src="js/main.js"></script>
+        <script>
+
+        </script>
     </body>
 
 </html>
