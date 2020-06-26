@@ -127,9 +127,9 @@ function main() {
   camera.position.y = 200;
 
   controls = new THREE.OrbitControls(camera, canvas);
-  this.controls.autoRotate = false;
-  this.controls.autoRotateSpeed = -10;
-  this.controls.screenSpacePanning = true;
+  controls.autoRotate = false;
+  controls.autoRotateSpeed = -10;
+  controls.screenSpacePanning = true;
 
   scene = new THREE.Scene();
   scene.background = new THREE.Color('#353535');
@@ -137,6 +137,11 @@ function main() {
   renderer.shadowMap.enabled = true;
   renderer.gammaInput = renderer.gammaOutput = true;
   renderer.gammaFactor = 2.0;
+  renderer.physicallyCorrectLights = true;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.setClearColor(0xcccccc);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
 
   {
     // const light = new THREE.DirectionalLight(16774618, 2);
@@ -272,6 +277,8 @@ function main() {
       camera.near = boxSize / 100;
       camera.far = boxSize * 100;
       camera.updateProjectionMatrix();
+
+      scene.add(camera);
       controls.target.copy(boxCenter);
       controls.update();
 
@@ -280,11 +287,6 @@ function main() {
         if (child.isMesh) {
           child.receiveShadow = true;
           child.castShadow = true;
-        }
-        if (child.isLight) {
-          this.state.addLights = false;
-        } else if (child.isMesh) {
-          // TODO(https://github.com/mrdoob/three.js/pull/18235): Clean up.
           child.material.depthWrite = !child.material.transparent;
         }
       });
@@ -301,7 +303,7 @@ function main() {
         );
 
       scene.add(gltf.scene);
-      addLights();
+      // addLights();
     });
   }
   requestAnimationFrame(render);
@@ -325,14 +327,6 @@ function onMouseMove(event) {
 }
 
 function addLights() {
-  // if (this.options.preset === Preset.ASSET_GENERATOR) {
-  //   const hemiLight = new HemisphereLight();
-  //   hemiLight.name = 'hemi_light';
-  //   this.scene.add(hemiLight);
-  //   this.lights.push(hemiLight);
-  //   return;
-  // }
-
   const light1 = new THREE.AmbientLight(0xffffff, 2);
   light1.name = 'ambient_light';
   camera.add(light1);
