@@ -126,40 +126,27 @@ function main() {
   camera.lookAt(new THREE.Vector3());
   camera.position.y = 200;
 
-  controls = new THREE.OrbitControls(camera, canvas);
+  controls = new THREE.MapControls(camera, canvas);
   controls.autoRotate = false;
   controls.autoRotateSpeed = -10;
   controls.screenSpacePanning = true;
 
   scene = new THREE.Scene();
-  scene.background = new THREE.Color('#353535');
+  scene.background = new THREE.Color('#ffffff');
 
   renderer.shadowMap.enabled = true;
   renderer.gammaInput = renderer.gammaOutput = true;
   renderer.gammaFactor = 2.0;
-  renderer.physicallyCorrectLights = true;
+  // renderer.physicallyCorrectLights = true;
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.setClearColor(0xcccccc);
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   {
-    // const light = new THREE.DirectionalLight(16774618, 2);
-    // light.position.set(100, 150, -40);
-    // light.castShadow = true;
-    // light.shadow.radius = 1;
-    // light.shadow.bias = -0.001;
-    // light.shadow.mapSize.width = 2048;
-    // light.shadow.mapSize.height = 2048;
-    // light.shadow.camera.near = 50;
-    // light.shadow.camera.far = 300;
-    // this._resizeShadowMapFrustum(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    // scene.add(light);
-    // scene.add(light.target);
 
-    const light = new THREE.DirectionalLight(16774618, 0.7);
+    const light = new THREE.DirectionalLight(16774618, 1.5);
     light.position.set(-300, 750, -300);
     light.castShadow = true;
     light.shadow.mapSize.width = light.shadow.mapSize.height = 4096;
@@ -174,59 +161,13 @@ function main() {
     scene.add(new THREE.HemisphereLight(0xefefef, 0xffffff, 1));
   }
 
-  {
-    pmremGenerator = new THREE.PMREMGenerator(renderer);
-    pmremGenerator.compileEquirectangularShader();
-  }
-
-  function frameArea(sizeToFitOnScreen, boxSize, boxCenter, camera) {
-    const halfSizeToFitOnScreen = sizeToFitOnScreen * 0.5;
-    const halfFovY = THREE.MathUtils.degToRad(camera.fov * 0.5);
-    const distance = halfSizeToFitOnScreen / Math.tan(halfFovY);
-    // compute a unit vector that points in the direction the camera is now
-    // in the xz plane from the center of the box
-    const direction = new THREE.Vector3()
-      .subVectors(camera.position, boxCenter)
-      .multiply(new THREE.Vector3(1, 0, 1))
-      .normalize();
-
-    // move the camera to a position distance units way from the center
-    // in whatever direction the camera was from the center already
-    camera.position.copy(direction.multiplyScalar(distance).add(boxCenter));
-
-    // pick some near and far values for the frustum that
-    // will contain the box.
-    camera.near = boxSize / 100;
-    camera.far = boxSize * 100;
-
-    camera.updateProjectionMatrix();
-
-    // point the camera to look at the center of the box
-    camera.lookAt(boxCenter.x, boxCenter.y, boxCenter.z);
-  }
-
   const gltfLoader = new THREE.GLTFLoader();
 
   cluster.forEach((cl) => loadClusters(cl));
 
-  function resizeRendererToDisplaySize(renderer) {
-    const canvas = renderer.domElement;
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
-    const needResize = canvas.width !== width || canvas.height !== height;
-    if (needResize) {
-      renderer.setSize(width, height, false);
-    }
-    return needResize;
-  }
+  loadCars({ x: 1, z: 0, cluster: 'cars' });
 
   function render() {
-    if (resizeRendererToDisplaySize(renderer)) {
-      const canvas = renderer.domElement;
-      camera.aspect = canvas.clientWidth / canvas.clientHeight;
-      camera.updateProjectionMatrix();
-    }
-
     controls.update();
 
     if (camera.position.x > 130) {
@@ -250,6 +191,28 @@ function main() {
 
     raycaster.setFromCamera(mouse, camera);
 
+    carList.forEach((car) => {
+      car.r.set(
+        new THREE.Vector3(car.position.x + 58, 1, car.position.z),
+        new THREE.Vector3(car.userData.x, 0, car.userData.z)
+      );
+      let _NT = car.r.intersectObjects(carList, true);
+      if (_NT.length > 0) {
+        car.speed = 0;
+        return;
+      } else {
+        car.speed = car.speed < car.maxSpeed ? car.speed + 0.002 : car.speed;
+
+        if (car.position.x < -380) car.position.x += LEAP * 2;
+        else if (car.position.x > 100) car.position.x -= LEAP * 2;
+        if (car.position.z < -320) car.position.x += LEAP * 2;
+        else if (car.position.z > 160) car.position.x -= LEAP * 2;
+
+        car.position.x += car.userData.x * car.speed;
+        car.position.z += car.userData.z * car.speed;
+      }
+    });
+
     renderer.render(scene, camera);
 
     requestAnimationFrame(render);
@@ -268,22 +231,21 @@ function main() {
       // frameArea(boxSize * 0.5, boxSize, boxCenter, camera);
 
       // update the Trackball controls to handle the new size
-      controls.maxDistance = boxSize * 10;
+      controls.maxDistance = boxSize * 5;
       camera.position.copy(boxCenter);
-      camera.position.x += boxSize / 2.0;
-      camera.position.y += boxSize / 5.0;
-      camera.position.z += boxSize / 2.0;
+      camera.position.x += boxSize / 8.0;
+      camera.position.y += boxSize / 10.0;
+      camera.position.z += boxSize / 5.0;
       camera.lookAt(boxCenter);
       camera.near = boxSize / 100;
-      camera.far = boxSize * 100;
+      camera.far = boxSize * 200;
       camera.updateProjectionMatrix();
-
       scene.add(camera);
+
       controls.target.copy(boxCenter);
       controls.update();
 
       gltf.scene.traverse(function (child) {
-        console.log(child);
         if (child.isMesh) {
           child.receiveShadow = true;
           child.castShadow = true;
@@ -337,4 +299,44 @@ function addLights() {
   camera.add(light2);
 
   renderer.toneMappingExposure = 1;
+}
+
+function loadCars({ x, z, cluster, direction }) {
+  loader.load(`../gltf/${cluster}.gltf`, (gltf) => {
+    controls.update();
+
+    gltf.scene.traverse(function (child) {
+      if (child.isMesh) {
+        child.receiveShadow = true;
+        child.castShadow = true;
+        child.material.depthWrite = !child.material.transparent;
+      }
+    });
+
+    gltf.scene.position.set(x * 60, 0, z * 60);
+    if (direction) gltf.scene.rotation.y = Math.PI * direction;
+    else if (direction === EAST) gltf.scene.position.x += 20;
+    else if (direction === WEST) gltf.scene.position.z += 20;
+    else if (direction === NORTH)
+      gltf.scene.position.set(
+        gltf.scene.position.x + 20,
+        0,
+        gltf.scene.position.z + 20
+      );
+
+    scene.add(gltf.scene);
+
+    gltf.scene.children.forEach((e) => {
+      e.distance = 0;
+      e.maxSpeed = 0.3;
+      e.speed = e.maxSpeed;
+      e.r = new THREE.Raycaster(
+        new THREE.Vector3(e.position.x, 2, e.position.z),
+        new THREE.Vector3(e.userData.x, 0, e.userData.z),
+        5,
+        15
+      );
+      carList.push(e);
+    });
+  });
 }
