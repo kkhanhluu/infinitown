@@ -1,0 +1,24 @@
+{
+  "name": "infinitown",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "parcel index.html -p 3000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kkhanhluu/infinitown.git"
+  },
+  "author": "Khanh Luu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kkhanhluu/infinitown/issues"
+  },
+  "homepage": "https://github.com/kkhanhluu/infinitown#readme",
+  "dependencies": {
+    "parcel-bundler": "^1.12.4",
+    "three": "^0.117.1"
+  }
+}
